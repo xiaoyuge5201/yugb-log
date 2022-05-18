@@ -1,0 +1,16 @@
+{
+  "properties": [
+    {
+      "name": "yugb.log.weaving-type",
+      "type": "java.lang.String",
+      "description": "织入类型(before,around,after,afterReturning,afterThrowing).",
+      "defaultValue": "afterReturning,afterThrowing"
+    },
+    {
+      "name": "yugb.log.log-table-name",
+      "type": "java.lang.String",
+      "description": "日志表名.",
+      "defaultValue": "sys_operate_log"
+    }
+  ]
+}
