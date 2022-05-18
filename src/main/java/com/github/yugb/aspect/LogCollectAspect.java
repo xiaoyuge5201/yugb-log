@@ -16,6 +16,8 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.core.annotation.Order;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
@@ -38,9 +40,11 @@ import java.util.stream.Collectors;
  *
  * @author xiaoyuge
  */
-@Aspect
-@Component
 @Order(1)
+@ComponentScan(value = "com.github.yugb")
+@Aspect
+@EnableAspectJAutoProxy(exposeProxy = true)
+@Component
 public class LogCollectAspect {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
@@ -73,7 +77,6 @@ public class LogCollectAspect {
     public void initData() {
         List<String> lowCaseList = Arrays.asList(properties.getWeavingType().split(","));
         weavingTypes = lowCaseList.stream().map(String::toLowerCase).collect(Collectors.toList());
-        System.out.println(String.join(",", weavingTypes));
     }
 
     /**
@@ -200,7 +203,7 @@ public class LogCollectAspect {
      * @param logObject 对象
      * @return 返回结果
      */
-    public static RequestLog getTypeInfo(JoinPoint point, RequestLog logObject) {
+    public RequestLog getTypeInfo(JoinPoint point, RequestLog logObject) {
         MethodSignature signature = (MethodSignature) point.getSignature();
         Method method = signature.getMethod();
         YLog yLog = method.getAnnotation(YLog.class);
@@ -248,7 +251,7 @@ public class LogCollectAspect {
         //下面两个方法在没有使用JSF的项目中是没有区别的
         RequestAttributes requestAttributes = RequestContextHolder.currentRequestAttributes();
         //从session里面获取对应的值
-        String username = (String) requestAttributes.getAttribute("username", RequestAttributes.SCOPE_SESSION);
+        String username = (String) requestAttributes.getAttribute(properties.getOperateUsernameOfSession(), RequestAttributes.SCOPE_SESSION);
         logObject.setModule(yLog.module());
         logObject.setDescription(yLog.desc());
         logObject.setUsername(username);

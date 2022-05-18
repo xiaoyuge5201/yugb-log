@@ -22,6 +22,11 @@ public class LogConfigProperties {
      * 日志表名
      */
     private String logTableName = "sys_operate_log";
+    /**
+     * 操作人用户名字段
+     * 需要将该字段放到session中，后续可以从session中获取该字段信息
+     */
+    private String operateUsernameOfSession = "username";
 
     public String getWeavingType() {
         return weavingType;
@@ -39,11 +44,20 @@ public class LogConfigProperties {
         this.logTableName = logTableName;
     }
 
+    public String getOperateUsernameOfSession() {
+        return operateUsernameOfSession;
+    }
+
+    public void setOperateUsernameOfSession(String operateUsernameOfSession) {
+        this.operateUsernameOfSession = operateUsernameOfSession;
+    }
+
     @Override
     public String toString() {
         return "LogConfigProperties{" +
                 "weavingType='" + weavingType + '\'' +
                 ", logTableName='" + logTableName + '\'' +
+                ", operateUsernameOfSession='" + operateUsernameOfSession + '\'' +
                 '}';
     }
 }

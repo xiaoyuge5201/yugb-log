@@ -1,3 +1,4 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
   com.github.yugb.config.ExcutePoolAutoConfiguration,\
-  com.github.yugb.config.LogConnectionAutoConfiguration
+  com.github.yugb.config.LogConnectionAutoConfiguration,\
+  com.github.yugb.aspect.LogCollectAspect

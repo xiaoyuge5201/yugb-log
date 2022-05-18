@@ -21,7 +21,7 @@ public class MyApplicationListener implements ApplicationListener<ContextRefresh
         //容器启动时，检测日志表是否存在
         logger.debug("spring context init...");
         boolean flag = logDao.validateTableExist();
-        if (!flag){
+        if (!flag) {
             logger.debug("创建日志表...");
             logDao.createLogTable();
         }

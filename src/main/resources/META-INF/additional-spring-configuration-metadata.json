@@ -11,6 +11,12 @@
       "type": "java.lang.String",
       "description": "日志表名.",
       "defaultValue": "sys_operate_log"
+    },
+    {
+      "name": "yugb.log.operate-username-of-session",
+      "type": "java.lang.String",
+      "description": "当前用户的用户名在session中的key值.",
+      "defaultValue": "username"
     }
   ]
 }
