@@ -19,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.core.annotation.Order;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -33,6 +32,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 /**
@@ -52,8 +53,12 @@ public class LogCollectAspect {
     @Autowired(required = false)
     HttpServletRequest request;
 
-    @Autowired
-    private ThreadPoolTaskExecutor threadPoolTaskExecutor;
+    private final ExecutorService service = Executors.newFixedThreadPool(20, r -> {
+        Thread thread = new Thread(r);
+        thread.setDaemon(true);
+        thread.setName("Thread" + thread.getId());
+        return thread;
+    });
 
     @Autowired
     private RequestLogDao requestLogDao;
@@ -96,7 +101,7 @@ public class LogCollectAspect {
                 getTypeInfo(joinPoint, logObj);
                 Map<String, String[]> parameterMap = request.getParameterMap();
                 logObj.setMapToParams(parameterMap);
-                threadPoolTaskExecutor.execute(new InsertLogThread(logObj, requestLogDao));
+                service.submit(new InsertLogThread(logObj, requestLogDao));
                 logger.debug("@Before:日志拦截对象：{}", logObj.toString());
             }
         } catch (Exception ex) {
@@ -106,9 +111,11 @@ public class LogCollectAspect {
 
     /**
      * 环绕通知(应用：十分强大，可以做任何事情)：方法执行前后分别执行，可以阻止方法的执行，必须手动执行目标方法
+     * @Around如果不执行proceed()，那么原方法将不会执行
      */
     @Around(value = "RequestAspect()")
     public Object doAround(ProceedingJoinPoint pjp) {
+        Object[] args = pjp.getArgs();
         try {
             if (weavingTypes.contains("around")) {
                 RequestLog logObj = new RequestLog();
@@ -120,11 +127,12 @@ public class LogCollectAspect {
                 getTypeInfo(pjp, logObj);
                 Map<String, String[]> parameterMap = request.getParameterMap();
                 logObj.setMapToParams(parameterMap);
-                threadPoolTaskExecutor.execute(new InsertLogThread(logObj, requestLogDao));
+                service.submit(new InsertLogThread(logObj, requestLogDao));
                 logger.debug("@Around:日志拦截对象：{}", logObj.toString());
             }
-        } catch (Exception ex) {
-            ex.printStackTrace();
+            return pjp.proceed(args);
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
         }
         return null;
     }
@@ -135,7 +143,7 @@ public class LogCollectAspect {
      * @param joinPoint 切点
      */
     @AfterReturning(value = "RequestAspect()")
-    public synchronized void doAfterReturning(JoinPoint joinPoint) {
+    public void doAfterReturning(JoinPoint joinPoint) {
         if (weavingTypes.contains("afterreturning")) {
             RequestLog logObj = new RequestLog();
             logObj.setCreateDate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
@@ -146,7 +154,7 @@ public class LogCollectAspect {
             getTypeInfo(joinPoint, logObj);
             Map<String, String[]> parameterMap = request.getParameterMap();
             logObj.setMapToParams(parameterMap);
-            threadPoolTaskExecutor.execute(new InsertLogThread(logObj, requestLogDao));
+            service.submit(new InsertLogThread(logObj, requestLogDao));
             logger.debug("@AfterReturning:日志拦截对象：{}", logObj.toString());
         }
     }
@@ -157,7 +165,7 @@ public class LogCollectAspect {
      * @param joinPoint 切点
      */
     @After(value = "RequestAspect()")
-    public synchronized void doAfter(JoinPoint joinPoint) {
+    public void doAfter(JoinPoint joinPoint) {
         if (weavingTypes.contains("after")) {
             RequestLog logObj = new RequestLog();
             logObj.setCreateDate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
@@ -168,7 +176,7 @@ public class LogCollectAspect {
             getTypeInfo(joinPoint, logObj);
             Map<String, String[]> parameterMap = request.getParameterMap();
             logObj.setMapToParams(parameterMap);
-            threadPoolTaskExecutor.execute(new InsertLogThread(logObj, requestLogDao));
+            service.submit(new InsertLogThread(logObj, requestLogDao));
             logger.debug("@After:日志拦截对象：{}", logObj.toString());
         }
     }
@@ -191,7 +199,8 @@ public class LogCollectAspect {
             logObj.setRemoteAddr(LoggerUtil.getClientIP(request));
             logObj.setException(e.toString());
             getTypeInfo(joinPoint, logObj);
-            threadPoolTaskExecutor.execute(new InsertLogThread(logObj, requestLogDao));
+            service.submit(new InsertLogThread(logObj, requestLogDao));
+
             logger.error("@AfterThrowing:日志拦截对象：{}", logObj.toString());
         }
     }
@@ -201,9 +210,8 @@ public class LogCollectAspect {
      *
      * @param point     切入点
      * @param logObject 对象
-     * @return 返回结果
      */
-    public RequestLog getTypeInfo(JoinPoint point, RequestLog logObject) {
+    public void getTypeInfo(JoinPoint point, RequestLog logObject) {
         MethodSignature signature = (MethodSignature) point.getSignature();
         Method method = signature.getMethod();
         YLog yLog = method.getAnnotation(YLog.class);
@@ -255,7 +263,6 @@ public class LogCollectAspect {
         logObject.setModule(yLog.module());
         logObject.setDescription(yLog.desc());
         logObject.setUsername(username);
-        return logObject;
     }
 
     /**

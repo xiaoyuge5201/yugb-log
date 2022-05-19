@@ -21,6 +21,7 @@ public class InsertLogThread extends Thread {
 
 	@Override
 	public void run() {
+		Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
 		logService.save(requestLog);
 	}	 
 }
