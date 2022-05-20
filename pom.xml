@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>yugb-log</artifactId>
     <groupId>com.github.xiaoyuge5201</groupId>
-    <version>1.0-beta</version>
+    <version>1.0</version>
     <packaging>jar</packaging>
     <description>通过AOP采集系统操作日志</description>
     <name>yugb-log</name>
@@ -39,25 +39,25 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-webmvc</artifactId>
-            <version>5.2.12.RELEASE</version>
+            <version>5.3.19</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-autoconfigure -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-autoconfigure</artifactId>
-            <version>2.0.4.RELEASE</version>
+            <version>2.4.4</version>
         </dependency>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
-            <version>2.0.4.RELEASE</version>
+            <version>2.4.4</version>
             <optional>true</optional>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-configuration-processor -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
-            <version>2.0.4.RELEASE</version>
+            <version>2.4.4</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-aop -->
         <dependency>
@@ -93,12 +93,6 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>3.4</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/org.apache.commons/com.springsource.org.apache.commons.beanutils -->
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>com.springsource.org.apache.commons.beanutils</artifactId>
-            <version>1.8.3</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.alibaba/druid-spring-boot-starter -->
         <dependency>
