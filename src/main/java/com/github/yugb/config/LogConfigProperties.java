@@ -2,11 +2,13 @@ package com.github.yugb.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+
 /**
- * @author: 小余哥
- * @description: 日志
- * @create: 2022-05-18 09:27
- **/
+ * 日志配置属性
+ *
+ * @author xiaoyuge
+ * @date 2022/05/20
+ */
 @ConfigurationProperties(prefix = "yugb.log")
 public class LogConfigProperties {
     /**

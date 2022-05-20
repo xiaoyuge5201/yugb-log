@@ -15,12 +15,13 @@ public class LoggerUtil {
      * @param request 請求
      * @return 返回结果 ip
      */
+    @SuppressWarnings("StringSplitter")
     public static String getClientIP(HttpServletRequest request) {
         String ips = request.getHeader("X-FORWARDED-FOR");
         if (ips != null && ips.length() != 0 && !"unknown".equalsIgnoreCase(ips)) {
             // 多次反向代理后会有多个ips值，第一个ips才是真实ips
             if (ips.contains(",")) {
-                ips = ips.split(",")[0];
+                ips = ips.split(",", -1)[0];
             }
         }
         if (ips == null || ips.length() == 0 || "unknown".equalsIgnoreCase(ips)) {
@@ -42,7 +43,7 @@ public class LoggerUtil {
             ips = request.getRemoteAddr();
         }
         if (ips != null && ips.contains(",")) {
-            String[] ipWithMultiProxy = ips.split(",");
+            String[] ipWithMultiProxy = ips.split(",", -1);
             for (String eachIpsegement : ipWithMultiProxy) {
                 if (!"unknown".equalsIgnoreCase(eachIpsegement)) {
                     ips = eachIpsegement;

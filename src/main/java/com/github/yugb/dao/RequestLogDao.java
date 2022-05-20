@@ -4,6 +4,8 @@ import com.github.yugb.bean.RequestLog;
 import com.github.yugb.config.DruidConfig;
 import com.github.yugb.config.LogConfigProperties;
 import com.github.yugb.util.JdbcClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -18,13 +20,15 @@ import java.sql.SQLException;
 @Repository
 public class RequestLogDao {
 
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+
     @Autowired
     private LogConfigProperties properties;
 
     /**
      * 保存
      *
-     * @param requestLog
+     * @param requestLog 实体对象
      */
     public void save(RequestLog requestLog) {
         String sql = "INSERT INTO " + properties.getLogTableName() + " (\n" +
@@ -61,7 +65,7 @@ public class RequestLogDao {
             prep.setString(11, requestLog.getException());
             prep.execute();
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error("something has gone terribly wrong", e);
         } finally {
             JdbcClient.close(conn, prep, rs);
         }
@@ -83,7 +87,7 @@ public class RequestLogDao {
             rs = prep.executeQuery();
             return rs.next();
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error("something has gone terribly wrong", e);
         } finally {
             JdbcClient.close(conn, prep, rs);
         }
@@ -95,6 +99,7 @@ public class RequestLogDao {
      *
      * @return 结果
      */
+    @SuppressWarnings("CatchAndPrintStackTrace")
     public boolean createLogTable() {
         Connection conn = null;
         PreparedStatement prep = null;
@@ -119,7 +124,7 @@ public class RequestLogDao {
                     ") ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COLLATE=utf8_bin ROW_FORMAT=COMPACT;");
             return prep.execute();
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error("something has gone terribly wrong", e);
         } finally {
             JdbcClient.close(conn, prep, rs);
         }

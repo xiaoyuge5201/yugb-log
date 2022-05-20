@@ -3,10 +3,14 @@ package com.github.yugb.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
+ * 日志连接属性
+ *
+ * @author xiaoyuge
  * @author: 小余哥
- * @description:
+ * @description: log链接数据信息
  * @create: 2022-05-18 09:27
- **/
+ * @date 2022/05/20
+ */
 @ConfigurationProperties(prefix = "spring.datasource")
 public class LogConnectionProperties {
 

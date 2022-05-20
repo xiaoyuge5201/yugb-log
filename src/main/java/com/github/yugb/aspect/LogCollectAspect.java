@@ -28,12 +28,10 @@ import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 /**
@@ -48,7 +46,7 @@ import java.util.stream.Collectors;
 @Component
 public class LogCollectAspect {
 
-    private Logger logger = LoggerFactory.getLogger(getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Autowired(required = false)
     HttpServletRequest request;
@@ -82,6 +80,8 @@ public class LogCollectAspect {
     public void initData() {
         List<String> lowCaseList = Arrays.asList(properties.getWeavingType().split(","));
         weavingTypes = lowCaseList.stream().map(String::toLowerCase).collect(Collectors.toList());
+        //设置时区
+        TimeZone.setDefault(TimeZone.getTimeZone("Asia/Shanghai"));
     }
 
     /**
@@ -89,6 +89,7 @@ public class LogCollectAspect {
      * 请求method前打印内容
      */
     @Before(value = "RequestAspect()")
+    @SuppressWarnings("CatchAndPrintStackTrace")
     public void doBefore(JoinPoint joinPoint) {
         try {
             if (weavingTypes.contains("before")) {
@@ -101,19 +102,22 @@ public class LogCollectAspect {
                 getTypeInfo(joinPoint, logObj);
                 Map<String, String[]> parameterMap = request.getParameterMap();
                 logObj.setMapToParams(parameterMap);
-                service.submit(new InsertLogThread(logObj, requestLogDao));
-                logger.debug("@Before:日志拦截对象：{}", logObj.toString());
+                Future<?> future = service.submit(new InsertLogThread(logObj, requestLogDao));
+                logger.debug("@Before:日志拦截对象：{}，线程状态{}", logObj.toString(), future.isDone());
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.error("something has gone terribly wrong", ex);
         }
     }
 
     /**
      * 环绕通知(应用：十分强大，可以做任何事情)：方法执行前后分别执行，可以阻止方法的执行，必须手动执行目标方法
-     * @Around如果不执行proceed()，那么原方法将不会执行
+     * Around如果不执行proceed()，那么原方法将不会执行
+     *
+     * @param pjp 切点
      */
     @Around(value = "RequestAspect()")
+    @SuppressWarnings("CatchAndPrintStackTrace")
     public Object doAround(ProceedingJoinPoint pjp) {
         Object[] args = pjp.getArgs();
         try {
@@ -127,12 +131,12 @@ public class LogCollectAspect {
                 getTypeInfo(pjp, logObj);
                 Map<String, String[]> parameterMap = request.getParameterMap();
                 logObj.setMapToParams(parameterMap);
-                service.submit(new InsertLogThread(logObj, requestLogDao));
-                logger.debug("@Around:日志拦截对象：{}", logObj.toString());
+                Future<?> future = service.submit(new InsertLogThread(logObj, requestLogDao));
+                logger.debug("@Around:日志拦截对象：{},线程状态：{}", logObj.toString(), future.isDone());
             }
             return pjp.proceed(args);
         } catch (Throwable throwable) {
-            throwable.printStackTrace();
+            logger.error("something has gone terribly wrong", throwable);
         }
         return null;
     }
@@ -143,6 +147,7 @@ public class LogCollectAspect {
      * @param joinPoint 切点
      */
     @AfterReturning(value = "RequestAspect()")
+    @SuppressWarnings("CatchAndPrintStackTrace")
     public void doAfterReturning(JoinPoint joinPoint) {
         if (weavingTypes.contains("afterreturning")) {
             RequestLog logObj = new RequestLog();
@@ -154,8 +159,8 @@ public class LogCollectAspect {
             getTypeInfo(joinPoint, logObj);
             Map<String, String[]> parameterMap = request.getParameterMap();
             logObj.setMapToParams(parameterMap);
-            service.submit(new InsertLogThread(logObj, requestLogDao));
-            logger.debug("@AfterReturning:日志拦截对象：{}", logObj.toString());
+            Future<?> future = service.submit(new InsertLogThread(logObj, requestLogDao));
+            logger.debug("@AfterReturning:日志拦截对象：{},线程状态：{}", logObj.toString(), future.isDone());
         }
     }
 
@@ -176,8 +181,8 @@ public class LogCollectAspect {
             getTypeInfo(joinPoint, logObj);
             Map<String, String[]> parameterMap = request.getParameterMap();
             logObj.setMapToParams(parameterMap);
-            service.submit(new InsertLogThread(logObj, requestLogDao));
-            logger.debug("@After:日志拦截对象：{}", logObj.toString());
+            Future<?> future = service.submit(new InsertLogThread(logObj, requestLogDao));
+            logger.debug("@After:日志拦截对象：{},线程状态：{}", logObj.toString(), future.isDone());
         }
     }
 
@@ -199,9 +204,8 @@ public class LogCollectAspect {
             logObj.setRemoteAddr(LoggerUtil.getClientIP(request));
             logObj.setException(e.toString());
             getTypeInfo(joinPoint, logObj);
-            service.submit(new InsertLogThread(logObj, requestLogDao));
-
-            logger.error("@AfterThrowing:日志拦截对象：{}", logObj.toString());
+            Future<?> future = service.submit(new InsertLogThread(logObj, requestLogDao));
+            logger.error("@AfterThrowing:日志拦截对象：{},线程状态：{}", logObj.toString(), future.isDone());
         }
     }
 
@@ -272,6 +276,7 @@ public class LogCollectAspect {
      * @param name      名称
      * @return 返回结果
      */
+    @SuppressWarnings("StringSplitter")
     public String getAnnotationValue(JoinPoint joinPoint, String name) {
         String paramName = name;
         // 获取方法中所有的参数
@@ -282,7 +287,7 @@ public class LogCollectAspect {
             paramName = paramName.replace("#{", "").replace("}", "");
             // 是否是复杂的参数类型:对象.参数名
             if (paramName.contains(".")) {
-                String[] split = paramName.split("\\.");
+                String[] split = paramName.split("\\.", -1);
                 // 获取方法中对象的内容
                 Object object = getValue(params, split[0]);
                 // 转换为JsonObject
@@ -319,7 +324,7 @@ public class LogCollectAspect {
     /**
      * 获取方法的参数名和值
      *
-     * @param joinPoint
+     * @param joinPoint 切点
      * @return 返回结果
      */
     public Map<String, Object> getParams(JoinPoint joinPoint) {

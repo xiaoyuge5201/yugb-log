@@ -15,16 +15,21 @@ import java.lang.annotation.*;
 public @interface YLog {
 
     /**
+     * 模块
+     *
      * @return 模块名称
      */
     String module() default "";
 
     /**
+     * desc
+     *
      * @return 描述
      */
     String desc() default "";
 
     /**
+     * 类型
      * @return 操作类型，增删改查
      */
     OperatorType type();

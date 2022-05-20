@@ -8,10 +8,14 @@ import com.github.yugb.util.JdbcClient;
 import org.springframework.scheduling.annotation.EnableAsync;
 
 /**
+ * 日志连接汽车配置
+ *
+ * @author xiaoyuge
  * @author: 小余哥
- * @description:
+ * @description: 自动装配
  * @create: 2022-05-18 09:27
- **/
+ * @date 2022/05/20
+ */
 @Configuration
 @ConditionalOnWebApplication
 @EnableConfigurationProperties({LogConnectionProperties.class, LogConfigProperties.class})
