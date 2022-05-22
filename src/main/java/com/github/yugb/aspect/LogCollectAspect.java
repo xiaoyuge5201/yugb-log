@@ -93,7 +93,7 @@ public class LogCollectAspect {
         try {
             if (weavingTypes.contains("before")) {
                 RequestLog logObj = new RequestLog();
-                logObj.setCreateDate(LocalDateTime.now(ZoneId.of("Asia/Shangha")).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+                    logObj.setCreateDate(LocalDateTime.now(ZoneId.of("GMT+8")).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
                 logObj.setRequestUri(request.getRequestURL().toString());
                 logObj.setMethod(request.getMethod());
                 logObj.setRemoteAddr(LoggerUtil.getClientIP(request));
@@ -122,7 +122,7 @@ public class LogCollectAspect {
         try {
             if (weavingTypes.contains("around")) {
                 RequestLog logObj = new RequestLog();
-                logObj.setCreateDate(LocalDateTime.now(ZoneId.of("Asia/Shangha")).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+                logObj.setCreateDate(LocalDateTime.now(ZoneId.of("GMT+8")).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
                 logObj.setRequestUri(request.getRequestURL().toString());
                 logObj.setMethod(request.getMethod());
                 logObj.setRemoteAddr(LoggerUtil.getClientIP(request));
@@ -150,7 +150,7 @@ public class LogCollectAspect {
     public void doAfterReturning(JoinPoint joinPoint) {
         if (weavingTypes.contains("afterreturning")) {
             RequestLog logObj = new RequestLog();
-            logObj.setCreateDate(LocalDateTime.now(ZoneId.of("Asia/Shangha")).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+            logObj.setCreateDate(LocalDateTime.now(ZoneId.of("GMT+8")).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
             logObj.setRequestUri(request.getRequestURL().toString());
             logObj.setMethod(request.getMethod());
             logObj.setRemoteAddr(LoggerUtil.getClientIP(request));
@@ -172,7 +172,7 @@ public class LogCollectAspect {
     public void doAfter(JoinPoint joinPoint) {
         if (weavingTypes.contains("after")) {
             RequestLog logObj = new RequestLog();
-            logObj.setCreateDate(LocalDateTime.now(ZoneId.of("Asia/Shangha")).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+            logObj.setCreateDate(LocalDateTime.now(ZoneId.of("GMT+8")).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
             logObj.setRequestUri(request.getRequestURL().toString());
             logObj.setMethod(request.getMethod());
             logObj.setRemoteAddr(LoggerUtil.getClientIP(request));
@@ -196,7 +196,7 @@ public class LogCollectAspect {
         if (weavingTypes.contains("afterthrowing")) {
             logger.error("进入日志切面异常通知,异常信息为：{}", e.getMessage());
             RequestLog logObj = new RequestLog();
-            logObj.setCreateDate(LocalDateTime.now(ZoneId.of("Asia/Shangha")).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+            logObj.setCreateDate(LocalDateTime.now(ZoneId.of("GMT+8")).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
             logObj.setLogType("error");
             logObj.setRequestUri(request.getRequestURL().toString());
             logObj.setMethod(request.getMethod());
