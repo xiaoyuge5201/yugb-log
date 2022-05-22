@@ -1,9 +1,9 @@
 package com.github.yugb.config;
 
 import com.alibaba.druid.pool.DruidDataSource;
-import com.alibaba.druid.support.http.StatViewServlet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
@@ -18,6 +18,9 @@ import java.sql.SQLException;
  */
 @Component
 public class DruidConfig {
+
+
+    private final static Logger logger = LoggerFactory.getLogger(DruidConfig.class);
 
     @Autowired
     private LogConnectionProperties properties;
@@ -51,21 +54,23 @@ public class DruidConfig {
         try {
             datasource.setFilters(properties.getFilters());
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error("something has gone terribly wrong", e);
         }
         datasource.setConnectionProperties(properties.getConnectionProperties());
 
         return datasource;
     }
+
     /**
      * 获取连接
+     *
      * @return 获取连接
      */
     public static Connection getConnection() {
         try {
             return datasource.getConnection();
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            logger.error("something has gone terribly wrong", ex);
         }
         return null;
     }
