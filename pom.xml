@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>yugb-log</artifactId>
     <groupId>com.github.xiaoyuge5201</groupId>
-    <version>1.1</version>
+    <version>1.0.0</version>
     <packaging>jar</packaging>
     <description>通过AOP采集系统操作日志</description>
     <name>yugb-log</name>
