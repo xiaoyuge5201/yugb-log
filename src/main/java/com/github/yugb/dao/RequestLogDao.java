@@ -15,6 +15,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
+ * @author xiaoyuge
  * 源数据源的Dao操作
  */
 @Repository
@@ -83,7 +84,8 @@ public class RequestLogDao {
         try {
             conn = DruidConfig.getConnection();
             assert conn != null;
-            prep = conn.prepareStatement("select * from information_schema.TABLES where TABLE_NAME = '" + properties.getLogTableName() + "' ");
+            prep = conn.prepareStatement("select * from information_schema.TABLES where TABLE_NAME = ? ");
+            prep.setString(1, properties.getLogTableName());
             rs = prep.executeQuery();
             return rs.next();
         } catch (SQLException e) {
