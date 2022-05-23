@@ -30,6 +30,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -102,7 +103,8 @@ public class LogCollectAspect {
                 Map<String, String[]> parameterMap = request.getParameterMap();
                 logObj.setMapToParams(parameterMap);
                 Future<?> future = service.submit(new InsertLogThread(logObj, requestLogDao));
-                logger.debug("@Before:日志拦截对象：{}，线程状态{}", logObj.toString(), future.isDone());
+                String result = (String) future.get();//阻塞方法，获取线程返回结果
+                logger.debug("@Before:日志拦截对象：{}，线程状态{}", logObj.toString(), result);
             }
         } catch (Exception ex) {
             logger.error("something has gone terribly wrong", ex);
@@ -131,7 +133,8 @@ public class LogCollectAspect {
                 Map<String, String[]> parameterMap = request.getParameterMap();
                 logObj.setMapToParams(parameterMap);
                 Future<?> future = service.submit(new InsertLogThread(logObj, requestLogDao));
-                logger.debug("@Around:日志拦截对象：{},线程状态：{}", logObj.toString(), future.isDone());
+                String result = (String) future.get();//阻塞方法，获取线程返回结果
+                logger.debug("@Around:日志拦截对象：{},线程状态：{}", logObj.toString(), result);
             }
             return pjp.proceed(args);
         } catch (Throwable throwable) {
@@ -147,7 +150,7 @@ public class LogCollectAspect {
      */
     @AfterReturning(value = "RequestAspect()")
     @SuppressWarnings("CatchAndPrintStackTrace")
-    public void doAfterReturning(JoinPoint joinPoint) {
+    public void doAfterReturning(JoinPoint joinPoint) throws ExecutionException, InterruptedException {
         if (weavingTypes.contains("afterreturning")) {
             RequestLog logObj = new RequestLog();
             logObj.setCreateDate(LocalDateTime.now(ZoneId.of("GMT+8")).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
@@ -159,7 +162,8 @@ public class LogCollectAspect {
             Map<String, String[]> parameterMap = request.getParameterMap();
             logObj.setMapToParams(parameterMap);
             Future<?> future = service.submit(new InsertLogThread(logObj, requestLogDao));
-            logger.debug("@AfterReturning:日志拦截对象：{},线程状态：{}", logObj.toString(), future.isDone());
+            String result = (String) future.get();//阻塞方法，获取线程返回结果
+            logger.debug("@AfterReturning:日志拦截对象：{},线程状态：{}", logObj.toString(), result);
         }
     }
 
@@ -169,7 +173,7 @@ public class LogCollectAspect {
      * @param joinPoint 切点
      */
     @After(value = "RequestAspect()")
-    public void doAfter(JoinPoint joinPoint) {
+    public void doAfter(JoinPoint joinPoint) throws ExecutionException, InterruptedException {
         if (weavingTypes.contains("after")) {
             RequestLog logObj = new RequestLog();
             logObj.setCreateDate(LocalDateTime.now(ZoneId.of("GMT+8")).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
@@ -181,7 +185,8 @@ public class LogCollectAspect {
             Map<String, String[]> parameterMap = request.getParameterMap();
             logObj.setMapToParams(parameterMap);
             Future<?> future = service.submit(new InsertLogThread(logObj, requestLogDao));
-            logger.debug("@After:日志拦截对象：{},线程状态：{}", logObj.toString(), future.isDone());
+            String result = (String) future.get();//阻塞方法，获取线程返回结果
+            logger.debug("@After:日志拦截对象：{},线程状态：{}", logObj.toString(), result);
         }
     }
 
@@ -192,7 +197,7 @@ public class LogCollectAspect {
      * @param e         异常信息
      */
     @AfterThrowing(pointcut = "RequestAspect()", throwing = "e")
-    public void doAfterThrowing(JoinPoint joinPoint, Throwable e) {
+    public void doAfterThrowing(JoinPoint joinPoint, Throwable e) throws ExecutionException, InterruptedException {
         if (weavingTypes.contains("afterthrowing")) {
             logger.error("进入日志切面异常通知,异常信息为：{}", e.getMessage());
             RequestLog logObj = new RequestLog();
@@ -204,7 +209,8 @@ public class LogCollectAspect {
             logObj.setException(e.toString());
             getTypeInfo(joinPoint, logObj);
             Future<?> future = service.submit(new InsertLogThread(logObj, requestLogDao));
-            logger.error("@AfterThrowing:日志拦截对象：{},线程状态：{}", logObj.toString(), future.isDone());
+            String result = (String) future.get();//阻塞方法，获取线程返回结果
+            logger.error("@AfterThrowing:日志拦截对象：{},线程状态：{}", logObj.toString(), result);
         }
     }
 
